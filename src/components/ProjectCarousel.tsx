@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Project {
@@ -47,7 +47,7 @@ interface ProjectCardProps {
 }
 
 const ProjectCard = memo(({ project, position }: ProjectCardProps) => (
-  <div className="flex flex-col items-center">
+  <div className="flex flex-col items-center select-none">
     <div
       className={`transform transition-all duration-300 ease-out will-change-transform ${
         position === 1
@@ -61,6 +61,7 @@ const ProjectCard = memo(({ project, position }: ProjectCardProps) => (
           alt={project.title}
           className="w-full h-full object-cover"
           loading="eager"
+          draggable="false"
         />
         
         {position === 1 && (
@@ -82,7 +83,7 @@ const ProjectCard = memo(({ project, position }: ProjectCardProps) => (
           : 'opacity-40 translate-y-2 scale-95'
       }`}
       style={{
-        width: position === 1 ? '288px' : '240px', // Matches w-72 (288px) and w-60 (240px)
+        width: position === 1 ? '288px' : '240px',
       }}
     >
       <h3 className={`text-lg font-semibold text-gray-800 dark:text-gray-200 truncate px-2 ${
@@ -98,6 +99,10 @@ ProjectCard.displayName = 'ProjectCard';
 
 const ProjectCarousel: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const nextProject = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % projects.length);
@@ -113,6 +118,66 @@ const ProjectCarousel: React.FC = () => {
     return [prev, currentIndex, next];
   }, [currentIndex]);
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setStartX(e.pageX - (carouselRef.current?.offsetLeft || 0));
+    setScrollLeft(carouselRef.current?.scrollLeft || 0);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - (carouselRef.current?.offsetLeft || 0));
+    setScrollLeft(carouselRef.current?.scrollLeft || 0);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - (carouselRef.current?.offsetLeft || 0);
+    const distance = (x - startX) * 2;
+    
+    if (Math.abs(distance) > 50) {
+      if (distance > 0) {
+        prevProject();
+      } else {
+        nextProject();
+      }
+      setIsDragging(false);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const x = e.touches[0].pageX - (carouselRef.current?.offsetLeft || 0);
+    const distance = (x - startX) * 2;
+    
+    if (Math.abs(distance) > 50) {
+      if (distance > 0) {
+        prevProject();
+      } else {
+        nextProject();
+      }
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    carousel.addEventListener('touchend', handleDragEnd);
+    carousel.addEventListener('mouseleave', handleDragEnd);
+    
+    return () => {
+      carousel.removeEventListener('touchend', handleDragEnd);
+      carousel.removeEventListener('mouseleave', handleDragEnd);
+    };
+  }, []);
+
   const visibleProjects = getVisibleProjects();
 
   return (
@@ -121,7 +186,16 @@ const ProjectCarousel: React.FC = () => {
         My Projects
       </h2>
       
-      <div className="relative flex justify-center items-center gap-4 overflow-hidden py-4">
+      <div
+        ref={carouselRef}
+        className="relative flex justify-center items-center gap-4 overflow-hidden py-4 cursor-grab active:cursor-grabbing"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleDragEnd}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleDragEnd}
+      >
         {visibleProjects.map((index, position) => (
           <ProjectCard
             key={`${projects[index].id}-${position}`}
