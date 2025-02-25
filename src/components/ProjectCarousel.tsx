@@ -11,26 +11,38 @@ interface Project {
 const projects: Project[] = [
   {
     id: 1,
-    title: "Project 1",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
+    title: "Photography Portfolio",
+    image: "https://images.unsplash.com/photo-1554080353-a576cf803bda",
     link: "#"
   },
   {
     id: 2,
-    title: "Project 2",
-    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
+    title: "Task Manager App",
+    image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8",
     link: "#"
   },
   {
     id: 3,
-    title: "Project 3",
-    image: "https://images.unsplash.com/photo-1504639725590-34d0984388bd",
+    title: "Weather Dashboard",
+    image: "https://images.unsplash.com/photo-1592210454359-9043f067919b",
+    link: "#"
+  },
+  {
+    id: 4,
+    title: "Music Player",
+    image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d",
+    link: "#"
+  },
+  {
+    id: 5,
+    title: "Recipe Finder",
+    image: "https://images.unsplash.com/photo-1466637574441-749b8f19452f",
     link: "#"
   }
 ];
 
 const ProjectCarousel: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(1);
 
   const nextProject = () => {
     setCurrentIndex((prev) => (prev + 1) % projects.length);
@@ -40,27 +52,59 @@ const ProjectCarousel: React.FC = () => {
     setCurrentIndex((prev) => (prev - 1 + projects.length) % projects.length);
   };
 
+  const getVisibleProjects = () => {
+    const prev = (currentIndex - 1 + projects.length) % projects.length;
+    const next = (currentIndex + 1) % projects.length;
+    return [prev, currentIndex, next];
+  };
+
+  const visibleProjects = getVisibleProjects();
+
   return (
-    <div className="relative w-full max-w-2xl mx-auto px-4">
+    <div className="relative w-full max-w-6xl mx-auto px-4">
       <h2 className="text-2xl font-bold text-center mb-8 text-gray-800 dark:text-gray-200">
         My Projects
       </h2>
       
-      <div className="relative aspect-video rounded-lg overflow-hidden shadow-xl">
-        <img
-          src={projects[currentIndex].image}
-          alt={projects[currentIndex].title}
-          className="w-full h-full object-cover"
-        />
-        
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 hover:opacity-100 transition-opacity">
-          <a
-            href={projects[currentIndex].link}
-            className="px-6 py-2 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-colors"
+      <div className="relative flex justify-center items-center gap-4 overflow-hidden">
+        {visibleProjects.map((index, position) => (
+          <div
+            key={projects[index].id}
+            className={`transition-all duration-500 ease-in-out ${
+              position === 1
+                ? 'w-72 h-96 z-20 scale-100 opacity-100'
+                : 'w-60 h-80 z-10 scale-90 opacity-70'
+            }`}
           >
-            Open
-          </a>
-        </div>
+            <div className="relative w-full h-full rounded-lg overflow-hidden shadow-xl">
+              <img
+                src={projects[index].image}
+                alt={projects[index].title}
+                className="w-full h-full object-cover"
+              />
+              
+              {position === 1 && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 hover:opacity-100 transition-opacity">
+                  <a
+                    href={projects[index].link}
+                    className="px-6 py-2 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-colors"
+                  >
+                    Open
+                  </a>
+                </div>
+              )}
+            </div>
+            <div className={`mt-4 text-center transition-all duration-500 ease-in-out ${
+              position === 1
+                ? 'opacity-100 transform translate-y-0'
+                : 'opacity-0 transform translate-y-4'
+            }`}>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                {projects[index].title}
+              </h3>
+            </div>
+          </div>
+        ))}
       </div>
       
       <div className="absolute inset-y-0 left-0 flex items-center">
