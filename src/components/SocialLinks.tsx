@@ -3,10 +3,10 @@ import { Facebook, Instagram, Github, User } from 'lucide-react';
 
 const SocialLinks: React.FC = () => {
   const socialLinks = [
-    { icon: Facebook, href: 'https://facebook.com', label: 'Facebook' },
-    { icon: Instagram, href: 'https://instagram.com', label: 'Instagram' },
-    { icon: Github, href: 'https://github.com', label: 'GitHub' },
-    { icon: User, href: '#about', label: 'About Me' },
+    { icon: Facebook, href: 'https://facebook.com/sakibur.msr', label: 'Facebook' },
+    { icon: Instagram, href: 'https://instagram.com/msr.sakibur', label: 'Instagram' },
+    { icon: Github, href: 'https://github.com/msrofficial', label: 'GitHub' },
+    { icon: User, href: 'https://msrsakibur.netlify.app', label: 'About Me' },
   ];
 
   return (
